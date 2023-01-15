@@ -12,12 +12,19 @@ public class NeuralNetwork : MonoBehaviour
     bool isPredator = false;
     Rigidbody2D Rigidbody2D;
     int thrust;
+    [SerializeField]
+    float[] inputs = new float[4];
+    List<GameObject> visibleObjects = new();
     // Start is called before the first frame update
     void Start()
     {
         if (isPrey)
         {
         StartCoroutine(IsMoving());
+        }
+        if (isPredator)
+        {
+            inputs = new float[5];
         }
         thrust = 1;
     }
@@ -50,22 +57,22 @@ public class NeuralNetwork : MonoBehaviour
             }
 
         }
-
+        AssignInputs();
     }
-    IEnumerator IsMoving()
+    IEnumerator IsMoving() //coroutine to check if AI is moving
     {
         yield return new WaitForSeconds(0.1f);
         //Checks if AI moved on it's last turn
         if (lastPos == transform.position)
         {
-            progressToReproduce += 0.1f;
+            progressToReproduce += 0.1f; //increment progress if not moving
         }
         else
         {
-            progressToReproduce = 0;
+            progressToReproduce = 0; //reset progress if moving
         }
         lastPos = transform.position;
-        StartCoroutine(IsMoving());
+        StartCoroutine(IsMoving()); //restart coroutine
     }
     private void Awake()
     {
@@ -87,10 +94,47 @@ public class NeuralNetwork : MonoBehaviour
         {
             if (collision.gameObject.name == "Prey(Clone)")
             {
-                print(collision.gameObject.name);
                 Destroy(collision.gameObject);
                 progressToReproduce+= 1;
             }
         }
+    }
+    void AssignInputs()
+    {
+        inputs[0] = thrust;
+        inputs[1] = progressToReproduce;
+        inputs[2] = visibleObjects.Count;
+        inputs[3] = ShortestDistanceOfVisible();
+    }
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+        if(collider.gameObject.name != gameObject.name)
+        {
+            visibleObjects.Add(collider.gameObject);
+        }
+    }
+    private void OnTriggerExit2D(Collider2D collider)
+    {
+        if (collider.gameObject.name != gameObject.name)
+        {
+            visibleObjects.Remove(collider.gameObject);
+        }
+    }
+    float PythagoreanTheorem(float input1, float input2)
+    {
+        return Mathf.Sqrt(
+            (input1 * input1) + (input2 * input2)
+            );
+    }
+    float ShortestDistanceOfVisible()
+    {
+        List<float> results = new();
+        for (int i = 0; i < visibleObjects.Count; i++)
+        {
+            results.Add(PythagoreanTheorem(
+                Mathf.Abs(visibleObjects[i].transform.position.x - transform.position.x),
+                Mathf.Abs(visibleObjects[i].transform.position.y - transform.position.y)));
+        }
+        return Mathf.Min(results.ToArray());
     }
 }

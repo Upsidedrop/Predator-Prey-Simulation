@@ -26,7 +26,5 @@ public class MapLooping : MonoBehaviour
     private void Awake()
     {
         Camera = GameObject.Find("Main Camera").GetComponent<Camera>();
-        Debug.Log(Camera.pixelWidth);
-        Debug.Log(Camera.pixelHeight);
     }
 }
