@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditorInternal.VR;
 using UnityEngine;
 
 public class SpawnOGAnimals : MonoBehaviour
@@ -19,7 +16,7 @@ public class SpawnOGAnimals : MonoBehaviour
                 * Random.Range(-0.1f, 0.1f),
                 Quaternion.identity);
         }
-        
+
         Instantiate(predator);
     }
 }

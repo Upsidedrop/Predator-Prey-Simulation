@@ -12,19 +12,20 @@ public class NeuralNetwork : MonoBehaviour
     bool isPredator = false;
     Rigidbody2D Rigidbody2D;
     int thrust;
+    float[] inputs = new float[5];
     [SerializeField]
-    float[] inputs = new float[4];
-    List<GameObject> visibleObjects = new();
+    GameObject closestGameobject;
+    FieldOfView FieldOfView;
     // Start is called before the first frame update
     void Start()
     {
         if (isPrey)
         {
-        StartCoroutine(IsMoving());
+            StartCoroutine(IsMoving());
         }
         if (isPredator)
         {
-            inputs = new float[5];
+            inputs = new float[6];
         }
         thrust = 1;
     }
@@ -37,23 +38,23 @@ public class NeuralNetwork : MonoBehaviour
             progressToReproduce = 0;
             if (isPrey)
             {
-            Instantiate(SpawnOGAnimals.prey,
-                transform.position
-                + Vector3.up
-                * Random.Range(-0.1f, 0.1f)
-                + Vector3.right
-                * Random.Range(-0.1f, 0.1f),
-                Quaternion.identity);
+                Instantiate(SpawnOGAnimals.prey,
+                    transform.position
+                    + Vector3.up
+                    * Random.Range(-0.1f, 0.1f)
+                    + Vector3.right
+                    * Random.Range(-0.1f, 0.1f),
+                    Quaternion.identity);
             }
             if (isPredator)
             {
-            Instantiate(SpawnOGAnimals.predator,
-                transform.position
-                + Vector3.up
-                * Random.Range(-0.1f, 0.1f)
-                + Vector3.right
-                * Random.Range(-0.1f, 0.1f),
-                Quaternion.identity);
+                Instantiate(SpawnOGAnimals.predator,
+                    transform.position
+                    + Vector3.up
+                    * Random.Range(-0.1f, 0.1f)
+                    + Vector3.right
+                    * Random.Range(-0.1f, 0.1f),
+                    Quaternion.identity);
             }
 
         }
@@ -87,6 +88,7 @@ public class NeuralNetwork : MonoBehaviour
         SpawnOGAnimals = GameObject.Find("Script Manager")
                                    .GetComponent<SpawnOGAnimals>();
         Rigidbody2D = GetComponent<Rigidbody2D>();
+        FieldOfView = GetComponentInChildren<FieldOfView>();
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -95,7 +97,7 @@ public class NeuralNetwork : MonoBehaviour
             if (collision.gameObject.name == "Prey(Clone)")
             {
                 Destroy(collision.gameObject);
-                progressToReproduce+= 1;
+                progressToReproduce += 1;
             }
         }
     }
@@ -103,23 +105,11 @@ public class NeuralNetwork : MonoBehaviour
     {
         inputs[0] = thrust;
         inputs[1] = progressToReproduce;
-        inputs[2] = visibleObjects.Count;
+        inputs[2] = FieldOfView.visibleObjects.Count;
         inputs[3] = ShortestDistanceOfVisible();
+        inputs[4] = DirectionToGameobject();
     }
-    private void OnTriggerEnter2D(Collider2D collider)
-    {
-        if(collider.gameObject.name != gameObject.name)
-        {
-            visibleObjects.Add(collider.gameObject);
-        }
-    }
-    private void OnTriggerExit2D(Collider2D collider)
-    {
-        if (collider.gameObject.name != gameObject.name)
-        {
-            visibleObjects.Remove(collider.gameObject);
-        }
-    }
+
     float PythagoreanTheorem(float input1, float input2)
     {
         return Mathf.Sqrt(
@@ -129,12 +119,38 @@ public class NeuralNetwork : MonoBehaviour
     float ShortestDistanceOfVisible()
     {
         List<float> results = new();
-        for (int i = 0; i < visibleObjects.Count; i++)
+        int closestDistanceIndex = -1;
+        for (int i = 0; i < FieldOfView.visibleObjects.Count; i++)
         {
             results.Add(PythagoreanTheorem(
-                Mathf.Abs(visibleObjects[i].transform.position.x - transform.position.x),
-                Mathf.Abs(visibleObjects[i].transform.position.y - transform.position.y)));
+                Mathf.Abs(FieldOfView.visibleObjects[i].transform.position.x - transform.position.x),
+                Mathf.Abs(FieldOfView.visibleObjects[i].transform.position.y - transform.position.y)));
+        }
+        for (int i = 0; i < results.Count; i++)
+        {
+            if (Mathf.Min(results.ToArray()) == results[i])
+            {
+                closestDistanceIndex = i;
+            }
+        }
+        if (closestDistanceIndex > -1)
+        {
+            closestGameobject = FieldOfView.visibleObjects[closestDistanceIndex];
+        }
+        else
+        {
+            closestGameobject = null;
         }
         return Mathf.Min(results.ToArray());
+    }
+    float DirectionToGameobject()
+    {
+        if (closestGameobject != null)
+        {
+            Vector3 direction = (closestGameobject.transform.position - transform.position).normalized;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            return angle;
+        }
+        return 0;
     }
 }

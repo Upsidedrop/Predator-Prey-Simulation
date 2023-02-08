@@ -254,6 +254,68 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &6647437477616493793
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4130048102281390257}
+  - component: {fileID: 8897827726269314761}
+  - component: {fileID: 9017288792641607525}
+  m_Layer: 0
+  m_Name: Field Of View
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4130048102281390257
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6647437477616493793}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4358538221679650906}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!58 &8897827726269314761
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6647437477616493793}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 3.54
+--- !u!114 &9017288792641607525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6647437477616493793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b15ca657f41c59240b0cd88c5e41d7b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visibleObjects: []
 --- !u!1 &7363549149730682123
 GameObject:
   m_ObjectHideFlags: 0
@@ -268,7 +330,6 @@ GameObject:
   - component: {fileID: 5603965391706973676}
   - component: {fileID: 2047317907765250764}
   - component: {fileID: -8129598386025474809}
-  - component: {fileID: 1953614568272134675}
   m_Layer: 0
   m_Name: Prey
   m_TagString: Untagged
@@ -290,6 +351,7 @@ Transform:
   m_Children:
   - {fileID: 8661626839918961849}
   - {fileID: 6541995485309173540}
+  - {fileID: 4130048102281390257}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -358,6 +420,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   progressToReproduce: 0
+  inputs:
+  - 0
+  - 0
+  - 0
+  - 0
+  closestGameobject: {fileID: 0}
 --- !u!58 &5603965391706973676
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -407,22 +475,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4fa25246e4e5a74f885cc4c4f8a0038, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!58 &1953614568272134675
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7363549149730682123}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 1.86
 --- !u!1 &8422829170572841446
 GameObject:
   m_ObjectHideFlags: 0
