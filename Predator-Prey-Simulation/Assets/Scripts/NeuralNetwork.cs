@@ -16,6 +16,7 @@ public class NeuralNetwork : MonoBehaviour
     [SerializeField]
     GameObject closestGameobject;
     FieldOfView FieldOfView;
+    Node[][] node = new Node[5][];
     // Start is called before the first frame update
     void Start()
     {
@@ -44,7 +45,7 @@ public class NeuralNetwork : MonoBehaviour
                     * Random.Range(-0.1f, 0.1f)
                     + Vector3.right
                     * Random.Range(-0.1f, 0.1f),
-                    Quaternion.identity);
+                    Quaternion.identity, SpawnOGAnimals.emptyPrey);
             }
             if (isPredator)
             {
@@ -54,7 +55,7 @@ public class NeuralNetwork : MonoBehaviour
                     * Random.Range(-0.1f, 0.1f)
                     + Vector3.right
                     * Random.Range(-0.1f, 0.1f),
-                    Quaternion.identity);
+                    Quaternion.identity, SpawnOGAnimals.emptyPredator);
             }
 
         }
@@ -96,8 +97,10 @@ public class NeuralNetwork : MonoBehaviour
         {
             if (collision.gameObject.name == "Prey(Clone)")
             {
+                
                 Destroy(collision.gameObject);
                 progressToReproduce += 1;
+
             }
         }
     }
@@ -154,3 +157,10 @@ public class NeuralNetwork : MonoBehaviour
         return 0;
     }
 }
+   struct Node
+   {
+       public float[] inputBiases;
+       public float[] inputWeights;
+       public float value;
+       public int layer;
+   }
