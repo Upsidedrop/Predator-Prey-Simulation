@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,7 +16,8 @@ public class NeuralNetwork : MonoBehaviour
     [SerializeField]
     GameObject closestGameobject;
     FieldOfView FieldOfView;
-    Node[][] nodes = new Node[5][];
+    Node[][] nodes = new Node[6][];
+    float hunger = 0;
     // Start is called before the first frame update
     void Start()
     {
@@ -27,7 +27,7 @@ public class NeuralNetwork : MonoBehaviour
         }
         if (isPredator)
         {
-            inputs = new float[6];
+            StartCoroutine(Starvation());
         }
         thrust = 1;
 
@@ -42,7 +42,7 @@ public class NeuralNetwork : MonoBehaviour
 
         }
 
-        Rigidbody2D.velocity = transform.up * thrust;
+        Rigidbody2D.velocity = transform.right * thrust;
         AssignInputs();
         AssignNodes();
     }
@@ -50,7 +50,7 @@ public class NeuralNetwork : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
         //Checks if AI moved on it's last turn
-        if (lastPos == transform.position)
+        if (Mathf.Abs((lastPos - transform.position).x) < 0.1f && Mathf.Abs((lastPos - transform.position).y) < 0.1f)
         {
             progressToReproduce += 0.1f; //increment progress if not moving
         }
@@ -86,7 +86,7 @@ public class NeuralNetwork : MonoBehaviour
 
                 Destroy(collision.gameObject);
                 progressToReproduce += 1;
-
+                hunger = 0;
             }
         }
     }
@@ -96,6 +96,7 @@ public class NeuralNetwork : MonoBehaviour
         inputs[1] = progressToReproduce;
         inputs[2] = FieldOfView.visibleObjects.Count;
         inputs[3] = ShortestDistanceOfVisible();
+        inputs[4] = hunger;
     }
 
     // This method calculates the hypotenuse of a right triangle using the Pythagorean theorem
@@ -193,7 +194,7 @@ public class NeuralNetwork : MonoBehaviour
         float[] lastValues = new float[7];
 
         // Loop through each layer of nodes in the network
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++)
         {
             // Loop through each individual node in the current layer
             for (int r = 0; r < 7; r++)
@@ -220,22 +221,25 @@ public class NeuralNetwork : MonoBehaviour
             }
 
             // Copy the values of the current layer's nodes to the lastValues array to be used in the next iteration
-            Array.Copy(values, lastValues, values.Length);
+            for (int i1 = 0; i1 < values.Length; i1++)
+            {
+                float item = values[i1];
+                lastValues[i1] = item;
+            }
         }
 
         // Calculate the output value by summing the lastValues array
-        float outputValues = Sum(lastValues);
 
         // Rotate the object using the output value and a smoothing factor
-        transform.rotation = Quaternion.Euler(0, 0, Mathf.Lerp(transform.rotation.z, outputValues, 0.05f));
+        transform.rotation = Quaternion.Euler(0, 0, Mathf.Lerp(transform.rotation.z, CalculateNodes(lastValues, nodes[5][1].inputWeights, nodes[5][1].bias) * 60, 0.25f));
 
         // Set the thrust value based on the output value and a smoothing factor, clamping it between -3 and 5
-        thrust = Mathf.Lerp(thrust, Mathf.Clamp(outputValues, -3, 5), 0.25f);
+        thrust = Mathf.Lerp(thrust, Mathf.Clamp(CalculateNodes(lastValues, nodes[5][2].inputWeights, nodes[5][2].bias), -3, 5), 0.25f);
     }
 
     void CreateNodes()
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++)
         {
             nodes[i] = new Node[7];
             for (int r = 0; r < 7; r++)
@@ -273,23 +277,27 @@ public class NeuralNetwork : MonoBehaviour
         progressToReproduce = 0;
         if (isPrey)
         {
-            Instantiate(SpawnOGAnimals.prey,
+            GameObject discard;
+            discard = Instantiate(SpawnOGAnimals.prey,
                 transform.position
                 + Vector3.up
-                * UnityEngine.Random.Range(-0.1f, 0.1f)
+                * Random.Range(-0.1f, 0.1f)
                 + Vector3.right
-                * UnityEngine.Random.Range(-0.1f, 0.1f),
+                * Random.Range(-0.1f, 0.1f),
                 Quaternion.identity, SpawnOGAnimals.emptyPrey);
+            discard.GetComponent<NeuralNetwork>().Mutate(nodes);
         }
         if (isPredator)
         {
-            Instantiate(SpawnOGAnimals.predator,
+            GameObject discard;
+            discard = Instantiate(SpawnOGAnimals.predator,
                 transform.position
                 + Vector3.up
-                * UnityEngine.Random.Range(-0.1f, 0.1f)
+                * Random.Range(-0.1f, 0.1f)
                 + Vector3.right
-                * UnityEngine.Random.Range(-0.1f, 0.1f),
+                * Random.Range(-0.1f, 0.1f),
                 Quaternion.identity, SpawnOGAnimals.emptyPredator);
+            discard.GetComponent<NeuralNetwork>().Mutate(nodes);
         }
     }
     float CalculateNodes(float[] values, float[] weights, float bias)
@@ -303,8 +311,33 @@ public class NeuralNetwork : MonoBehaviour
         result = Sum(alteredValues) + bias;
         return result;
     }
+    public void Mutate(Node[][] parentNodes)
+    {
+        for (int i1 = 0; i1 < parentNodes.Length; i1++)
+        {
+            for (int i = 0; i < parentNodes[i1].Length; i++)
+            {
+                nodes[i1][i] = parentNodes[i1][i];
+                nodes[i1][i].bias += Random.Range(-0.5f, 0.5f);
+                for (int i2 = 0; i2 < 7; i2++)
+                {
+                    nodes[i1][i].inputWeights[i2] = Random.Range(-0.5f, 0.5f);
+                }
+            }
+        }
+    }
+    IEnumerator Starvation()
+    {
+        if (hunger >= 30)
+        {
+            Destroy(gameObject);
+        }
+        yield return new WaitForSeconds(0.1f);
+        hunger += 0.1f;
+        StartCoroutine(Starvation());
+    }
 }
-struct Node
+public struct Node
 {
     public float bias;
     public float[] inputWeights;
